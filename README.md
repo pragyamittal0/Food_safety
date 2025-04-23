@@ -1,3 +1,4 @@
+
 # 🥗 Food Safety Flashcard App
 
 A responsive, swipeable flashcard quiz app built with **React**, designed to train hospitality team members on **food safety**, **sanitation**, and **service practices** in a fun and visual way.
@@ -6,7 +7,7 @@ A responsive, swipeable flashcard quiz app built with **React**, designed to tra
 
 ## 📸 Preview
 
-> _Add a screenshot or GIF of your app here!_
+<img width="1092" alt="foodsafety" src="https://github.com/user-attachments/assets/28bff078-634b-4b34-96f0-36c9679212fe" />
 
 ---
 
