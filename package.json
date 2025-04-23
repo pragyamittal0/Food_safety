@@ -16,7 +16,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-swipeable": "^7.0.2",
-    "react-tinder-card": "^1.6.4"
+    
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
