@@ -1,12 +1,34 @@
-# React + Vite
+# 🥗 Food Safety Flashcard App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A responsive, swipeable flashcard quiz app built with **React**, designed to train hospitality team members on **food safety**, **sanitation**, and **service practices** in a fun and visual way.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📸 Preview
 
-## Expanding the ESLint configuration
+> _Add a screenshot or GIF of your app here!_
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## ✨ Features
+
+- ✅ Flashcards with **images and four answer options**
+- ✅ **Correct/Incorrect** feedback with colors
+- ✅ **Swipe gestures** on mobile (left/right)
+- ✅ Arrow navigation on desktop/tablet
+- ✅ **Auto summary** after completion
+- ✅ Fully **responsive** (3 cards on desktop, 2 on tablet, 1 on mobile)
+
+---
+
+## 🛠 Tech Stack
+
+- ⚛️ React
+- 🎨 CSS (grid & transitions)
+- 🖼 Custom image-based questions
+- 📦 Git + GitHub for version control
+
+---
+
+## 📂 Project Structure
+
