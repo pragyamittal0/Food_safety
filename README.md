@@ -28,7 +28,4 @@ A responsive, swipeable flashcard quiz app built with **React**, designed to tra
 - 🖼 Custom image-based questions
 - 📦 Git + GitHub for version control
 
----
 
-## 📂 Project Structure
-learning_app/ ├── public/ │ └── index.html ├── src/ │ ├── assets/ # Flashcard images │ ├── App.jsx # Main React component │ ├── App.css # Custom styles │ └── index.js # Entry point ├── .gitignore ├── package.json └── README.md
