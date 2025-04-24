@@ -13,10 +13,9 @@ A responsive, swipeable flashcard quiz app built with **React**, designed to tra
 
 ## ✨ Features
 
-- ✅ Flashcards with **images and four answer options**
+
 - ✅ **Correct/Incorrect** feedback with colors
-- ✅ **Swipe gestures** on mobile (left/right)
-- ✅ Arrow navigation on desktop/tablet
+- ✅ Arrow navigation
 - ✅ **Auto summary** after completion
 - ✅ Fully **responsive** (3 cards on desktop, 2 on tablet, 1 on mobile)
 
