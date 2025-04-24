@@ -90,6 +90,8 @@ body {
   background-color: #f9f9f9;
   cursor: pointer;
   transition: all 0.3s ease;
+  color: rgb(152, 22, 44);
+  font-weight: bold;
 }
 
 .option:hover:enabled {
