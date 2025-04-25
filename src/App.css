@@ -208,3 +208,25 @@ body {
   font-size: 18px;
   color: #444;
 }
+.stack-container {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  margin: auto;
+  height: 480px;
+}
+
+.card--top {
+  z-index: 3;
+  position: absolute;
+  left: 0; top: 0;
+}
+
+.card--next {
+  z-index: 2;
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  transform: scale(0.95);
+  opacity: 0.6;
+}
