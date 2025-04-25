@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSpring, animated as a } from '@react-spring/web';
+import { useDrag } from '@use-gesture/react';
 import './App.css';
 
 import img1 from './assets/age_verification.png';
@@ -31,6 +33,53 @@ const questions = [
   { image: img13, options: ['1 hour', '4 hours', '2 hours', '6 hours'], answer: 3 }
 ];
 
+const SwipeableCard = ({ question, onSwipe, selectedAnswers, handleAnswer }) => {
+  const [{ x, rot }, api] = useSpring(() => ({ x: 0, rot: 0 }));
+
+  const bind = useDrag(({ down, movement: [mx], direction: [dx], velocity }) => {
+    const trigger = velocity > 0.2;
+
+    if (!down && trigger) {
+      api.start({
+        x: dx > 0 ? 300 : -300,
+        rot: dx * 15,
+        immediate: false,
+        onRest: () => onSwipe()
+      });
+    } else {
+      api.start({
+        x: down ? mx : 0,
+        rot: down ? mx / 10 : 0,
+        immediate: down
+      });
+    }
+  });
+
+  const index = question.index;
+  return (
+    <a.div className="swipeable-card" {...bind()} style={{ x, rotateZ: rot }}>
+      <div className="card">
+        <img src={question.image} alt={`Flashcard ${index + 1}`} className="image" />
+        {question.options.map((opt, idx) => {
+          const isSelected = selectedAnswers[index] === idx;
+          const isCorrect = isSelected && idx === (question.answer - 1);
+          const isWrong = isSelected && idx !== (question.answer - 1);
+          return (
+            <button
+              key={idx}
+              className={`option ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''}`}
+              onClick={() => handleAnswer(index, idx)}
+              disabled={selectedAnswers[index] !== null}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+    </a.div>
+  );
+};
+
 export default function App() {
   const [startIndex, setStartIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState(Array(questions.length).fill(null));
@@ -38,20 +87,6 @@ export default function App() {
 
   const screenCards =
     window.innerWidth >= 1024 ? 3 : window.innerWidth >= 768 ? 2 : 1;
-
-  const wrapperRef = useRef(null);
-
-  const handleNext = () => {
-    if (!selectedAnswers.slice(startIndex, startIndex + screenCards).includes(null)) {
-      const next = (startIndex + screenCards) % questions.length;
-      setStartIndex(next);
-    }
-  };
-
-  const handlePrev = () => {
-    const prev = (startIndex - screenCards + questions.length) % questions.length;
-    setStartIndex(prev);
-  };
 
   const getVisibleCards = () => {
     const endIndex = startIndex + screenCards;
@@ -69,46 +104,29 @@ export default function App() {
 
     const allAnswered = updated.every((a) => a !== null);
     if (allAnswered) {
-      setTimeout(() => setShowSummary(true), 500);
+      setTimeout(() => setShowSummary(true), 600);
     }
   };
 
-  // Mobile swipe support
-  useEffect(() => {
-    const container = wrapperRef.current;
-    let startX = 0;
+  const handleNext = () => {
+    if (!selectedAnswers.slice(startIndex, startIndex + screenCards).includes(null)) {
+      const next = (startIndex + screenCards) % questions.length;
+      setStartIndex(next);
+    }
+  };
 
-    const handleTouchStart = (e) => {
-      startX = e.touches[0].clientX;
-    };
+  const handlePrev = () => {
+    const prev = (startIndex - screenCards + questions.length) % questions.length;
+    setStartIndex(prev);
+  };
 
-    const handleTouchEnd = (e) => {
-      const endX = e.changedTouches[0].clientX;
-      const deltaX = endX - startX;
-
-      if (Math.abs(deltaX) > 50) {
-        if (deltaX < 0) handleNext();
-        if (deltaX > 0) handlePrev();
-      }
-    };
-
-    container.addEventListener('touchstart', handleTouchStart);
-    container.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [startIndex, selectedAnswers]);
-
-  // Score logic - adjust for 1-based `answer` keys
   const correctCount = selectedAnswers.filter(
     (ans, i) => ans === (questions[i].answer - 1)
   ).length;
 
   return (
     <main className="container">
-      <h1 className="title">FOOD - SAFETY</h1>
+      <h1 className="title">FOOD SAFETY QUIZ</h1>
 
       {showSummary ? (
         <div className="summary">
@@ -121,41 +139,52 @@ export default function App() {
         </div>
       ) : (
         <>
-          <div className="carousel-wrapper" ref={wrapperRef}>
+          <div className="carousel-wrapper">
             <div className="carousel">
-              {getVisibleCards().map((q) => (
-                <div key={q.index} className="card">
-                  <img src={q.image} alt={`Flashcard ${q.index + 1}`} className="image" />
-                  {q.options.map((opt, idx) => {
-                    const isSelected = selectedAnswers[q.index] === idx;
-                    const isCorrect = isSelected && idx === (q.answer - 1);
-                    const isWrong = isSelected && idx !== (q.answer - 1);
-                    return (
-                      <button
-                        key={idx}
-                        className={`option ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''}`}
-                        onClick={() => handleAnswer(q.index, idx)}
-                        disabled={selectedAnswers[q.index] !== null}
-                      >
-                        {opt}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
+              {screenCards === 1 ? (
+                <SwipeableCard
+                  question={getVisibleCards()[0]}
+                  onSwipe={handleNext}
+                  selectedAnswers={selectedAnswers}
+                  handleAnswer={handleAnswer}
+                />
+              ) : (
+                getVisibleCards().map((q) => (
+                  <div key={q.index} className="card">
+                    <img src={q.image} alt={`Flashcard ${q.index + 1}`} className="image" />
+                    {q.options.map((opt, idx) => {
+                      const isSelected = selectedAnswers[q.index] === idx;
+                      const isCorrect = isSelected && idx === (q.answer - 1);
+                      const isWrong = isSelected && idx !== (q.answer - 1);
+                      return (
+                        <button
+                          key={idx}
+                          className={`option ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''}`}
+                          onClick={() => handleAnswer(q.index, idx)}
+                          disabled={selectedAnswers[q.index] !== null}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
-          <div className="navigation">
-            <button onClick={handlePrev} className="nav-button">⬅️</button>
-            <button
-              onClick={handleNext}
-              className="nav-button"
-              disabled={selectedAnswers.slice(startIndex, startIndex + screenCards).includes(null)}
-            >
-              ➡️
-            </button>
-          </div>
+          {screenCards > 1 && (
+            <div className="navigation">
+              <button onClick={handlePrev} className="nav-button">⬅️</button>
+              <button
+                onClick={handleNext}
+                className="nav-button"
+                disabled={selectedAnswers.slice(startIndex, startIndex + screenCards).includes(null)}
+              >
+                ➡️
+              </button>
+            </div>
+          )}
 
           <div className="dots">
             {questions.map((_, i) => (
