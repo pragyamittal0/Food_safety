@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
-import { useSpring, animated as a } from '@react-spring/web';
-import { useDrag } from '@use-gesture/react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 import img1 from './assets/age_verification.png';
@@ -34,66 +32,61 @@ const questions = [
 ];
 
 export default function App() {
-  const [index, setIndex] = useState(0);
-  const [answered, setAnswered] = useState(false);
-  const [selected, setSelected] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState(Array(questions.length).fill(null));
   const [showSummary, setShowSummary] = useState(false);
-  const [correctCount, setCorrectCount] = useState(0);
+  const wrapperRef = useRef(null);
 
-  const [{ x, rot, opacity }, api] = useSpring(() => ({
-    x: 0, rot: 0, opacity: 1
-  }));
+  const handleAnswer = (index, selected) => {
+    const updated = [...selectedAnswers];
+    updated[index] = selected;
+    setSelectedAnswers(updated);
 
-  const handleAnswer = (i) => {
-    if (selected !== null) return;
-    setSelected(i);
-    setAnswered(true);
-
-    if (i === questions[index].answer - 1) {
-      setCorrectCount((prev) => prev + 1);
+    const allAnswered = updated.every((a) => a !== null);
+    if (allAnswered) {
+      setTimeout(() => setShowSummary(true), 500);
     }
   };
 
-  const nextCard = () => {
-    if (!answered) return;
-
-    api.start({ x: 300, opacity: 0, rot: 15 });
-
-    setTimeout(() => {
-      setSelected(null);
-      setAnswered(false);
-      api.set({ x: 0, opacity: 1, rot: 0 });
-
-      if (index + 1 < questions.length) {
-        setIndex(index + 1);
-      } else {
-        setShowSummary(true);
-      }
-    }, 300);
+  const handleNext = () => {
+    if (selectedAnswers[currentIndex] !== null) {
+      setCurrentIndex((prev) => (prev + 1) % questions.length);
+    }
   };
 
-  const bind = useDrag(
-    ({ down, movement: [mx], direction: [dx], velocity }) => {
-      if (!answered) return;
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + questions.length) % questions.length);
+  };
 
-      const trigger = velocity > 0.3;
+  const correctCount = selectedAnswers.filter(
+    (ans, i) => ans === (questions[i].answer - 1)
+  ).length;
 
-      if (!down && trigger) {
-        api.start({
-          x: dx > 0 ? 300 : -300,
-          rot: dx * 15,
-          immediate: false,
-          onRest: () => nextCard()
-        });
-      } else {
-        api.start({ x: down ? mx : 0, rot: down ? mx / 10 : 0, immediate: down });
+  // Swipe gestures
+  useEffect(() => {
+    const container = wrapperRef.current;
+    let startX = 0;
+
+    const onTouchStart = (e) => {
+      startX = e.touches[0].clientX;
+    };
+
+    const onTouchEnd = (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const delta = endX - startX;
+      if (Math.abs(delta) > 50) {
+        delta < 0 ? handleNext() : handlePrev();
       }
-    },
-    { enabled: answered }
-  );
+    };
 
-  const current = questions[index];
-  const next = questions[index + 1];
+    container.addEventListener('touchstart', onTouchStart);
+    container.addEventListener('touchend', onTouchEnd);
+
+    return () => {
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [currentIndex, selectedAnswers]);
 
   return (
     <main className="container">
@@ -103,41 +96,47 @@ export default function App() {
         <div className="summary">
           <div className="summary-box">
             <h2>Quiz Completed 🎉</h2>
-            <p>You got <strong>{correctCount}</strong> out of <strong>{questions.length}</strong> correct!</p>
+            <p>
+              You got <strong>{correctCount}</strong> out of <strong>{questions.length}</strong> correct!
+            </p>
           </div>
         </div>
       ) : (
-        <div className="stack-container">
-          {next && (
-            <div className="card card--next">
-              <img src={next.image} alt="Next" className="image" />
+        <>
+          <div className="carousel-wrapper" ref={wrapperRef}>
+            <div className="carousel">
+              <div className="card">
+                <img src={questions[currentIndex].image} alt="Question" className="image" />
+                {questions[currentIndex].options.map((opt, i) => {
+                  const isSelected = selectedAnswers[currentIndex] === i;
+                  const isCorrect = isSelected && i === (questions[currentIndex].answer - 1);
+                  const isWrong = isSelected && i !== (questions[currentIndex].answer - 1);
+                  return (
+                    <button
+                      key={i}
+                      className={`option ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''}`}
+                      onClick={() => handleAnswer(currentIndex, i)}
+                      disabled={isSelected}
+                    >
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          )}
+          </div>
 
-          <a.div className="swipeable-card" {...bind()} style={{ x, rotateZ: rot, opacity }}>
-            <div className="card card--top">
-              <img src={current.image} alt="Current" className="image" />
-              {current.options.map((opt, i) => {
-                const isCorrect = selected === i && i === (current.answer - 1);
-                const isWrong = selected === i && i !== (current.answer - 1);
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleAnswer(i)}
-                    className={`option ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''}`}
-                    disabled={selected !== null}
-                  >
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
-          </a.div>
+          <div className="navigation">
+            <button onClick={handlePrev} className="nav-button">⬅️</button>
+            <button onClick={handleNext} className="nav-button" disabled={selectedAnswers[currentIndex] === null}>➡️</button>
+          </div>
 
-          <button className="nav-button" onClick={nextCard} disabled={!answered}>
-            ➡️ Next
-          </button>
-        </div>
+          <div className="dots">
+            {questions.map((_, i) => (
+              <span key={i} className={`dot ${i === currentIndex ? 'active' : ''}`} />
+            ))}
+          </div>
+        </>
       )}
     </main>
   );
