@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+import PowerBIReport from './PowerBiReport'; // Make sure the file name matches exactly (case sensitive)
 
 import img1 from './assets/age_verification.png';
 import img2 from './assets/alcohol.png';
@@ -35,6 +36,7 @@ export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState(Array(questions.length).fill(null));
   const [showSummary, setShowSummary] = useState(false);
+  const [showReport, setShowReport] = useState(false); // 👈 New state to control report
   const wrapperRef = useRef(null);
 
   const handleAnswer = (index, selected) => {
@@ -90,52 +92,64 @@ export default function App() {
 
   return (
     <main className="container">
-      <h1 className="title">FOOD SAFETY QUIZ</h1>
+      <div className="top-bar">
+        <h1 className="title">FOOD SAFETY QUIZ</h1>
+        <button className="report-button" onClick={() => setShowReport(true)}>
+          View Report
+        </button>
+      </div>
 
-      {showSummary ? (
-        <div className="summary">
-          <div className="summary-box">
-            <h2>Quiz Completed 🎉</h2>
-            <p>
-              You got <strong>{correctCount}</strong> out of <strong>{questions.length}</strong> correct!
-            </p>
-          </div>
-        </div>
+      {/* Show Report or Quiz based on showReport */}
+      {showReport ? (
+        <PowerBIReport onClose={() => setShowReport(false)} />
       ) : (
         <>
-          <div className="carousel-wrapper" ref={wrapperRef}>
-            <div className="carousel">
-              <div className="card">
-                <img src={questions[currentIndex].image} alt="Question" className="image" />
-                {questions[currentIndex].options.map((opt, i) => {
-                  const isSelected = selectedAnswers[currentIndex] === i;
-                  const isCorrect = isSelected && i === (questions[currentIndex].answer - 1);
-                  const isWrong = isSelected && i !== (questions[currentIndex].answer - 1);
-                  return (
-                    <button
-                      key={i}
-                      className={`option ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''}`}
-                      onClick={() => handleAnswer(currentIndex, i)}
-                      disabled={isSelected}
-                    >
-                      {opt}
-                    </button>
-                  );
-                })}
+          {showSummary ? (
+            <div className="summary">
+              <div className="summary-box">
+                <h2>Quiz Completed 🎉</h2>
+                <p>
+                  You got <strong>{correctCount}</strong> out of <strong>{questions.length}</strong> correct!
+                </p>
               </div>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="carousel-wrapper" ref={wrapperRef}>
+                <div className="carousel">
+                  <div className="card">
+                    <img src={questions[currentIndex].image} alt="Question" className="image" />
+                    {questions[currentIndex].options.map((opt, i) => {
+                      const isSelected = selectedAnswers[currentIndex] === i;
+                      const isCorrect = isSelected && i === (questions[currentIndex].answer - 1);
+                      const isWrong = isSelected && i !== (questions[currentIndex].answer - 1);
+                      return (
+                        <button
+                          key={i}
+                          className={`option ${isCorrect ? 'correct' : ''} ${isWrong ? 'wrong' : ''}`}
+                          onClick={() => handleAnswer(currentIndex, i)}
+                          disabled={isSelected}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
 
-          <div className="navigation">
-            <button onClick={handlePrev} className="nav-button">⬅️</button>
-            <button onClick={handleNext} className="nav-button" disabled={selectedAnswers[currentIndex] === null}>➡️</button>
-          </div>
+              <div className="navigation">
+                <button onClick={handlePrev} className="nav-button">⬅️</button>
+                <button onClick={handleNext} className="nav-button" disabled={selectedAnswers[currentIndex] === null}>➡️</button>
+              </div>
 
-          <div className="dots">
-            {questions.map((_, i) => (
-              <span key={i} className={`dot ${i === currentIndex ? 'active' : ''}`} />
-            ))}
-          </div>
+              <div className="dots">
+                {questions.map((_, i) => (
+                  <span key={i} className={`dot ${i === currentIndex ? 'active' : ''}`} />
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
     </main>
