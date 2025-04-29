@@ -288,6 +288,6 @@ body {
     font-size: 13px;
   }
   .container {
-    width: 100%;
+    width: max-content;
   }
 }
