@@ -31,4 +31,7 @@ A responsive, swipeable flashcard quiz app built with **React**, designed to tra
 - 🖼 Custom image-based questions
 - 📦 Git + GitHub for version control
 
+## Demo 
+👉 [Click here to try the live demo](https://foodsafetyflashcards.netlify.app)
+
 
